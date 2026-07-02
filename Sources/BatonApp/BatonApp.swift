@@ -1,9 +1,9 @@
 import AppKit
-import DeckCore
+import BatonCore
 import SwiftUI
 
 @main
-struct DeckApp: App {
+struct BatonApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var store: AppStore
 
@@ -17,7 +17,7 @@ struct DeckApp: App {
             let database = try AppDatabase.onDisk()
             store = AppStore(repository: Repository(database: database))
         } catch {
-            fatalError("Could not open the Deck database: \(error)")
+            fatalError("Could not open the Baton database: \(error)")
         }
         _store = StateObject(wrappedValue: store)
     }
@@ -27,11 +27,11 @@ struct DeckApp: App {
     }
 
     var body: some Scene {
-        WindowGroup("Deck") {
+        WindowGroup("Baton") {
             ContentView()
                 .environmentObject(store)
                 .frame(minWidth: 900, minHeight: 560)
-                .environment(\.deckTheme, theme)
+                .environment(\.batonTheme, theme)
                 .tint(theme.accent)
                 .accentColor(theme.accent)
                 .onAppear { NSApp.appearance = appearance.nsAppearance }
@@ -47,7 +47,7 @@ struct DeckApp: App {
 
         Settings {
             ThemeSettingsView()
-                .environment(\.deckTheme, theme)
+                .environment(\.batonTheme, theme)
                 .tint(theme.accent)
                 .accentColor(theme.accent)
         }

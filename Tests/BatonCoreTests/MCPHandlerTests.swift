@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import DeckCore
+@testable import BatonCore
 
 struct MCPHandlerTests {
     let repository: Repository
@@ -49,7 +49,7 @@ struct MCPHandlerTests {
         ])
         let result = response?["result"]
         #expect(result?["protocolVersion"]?.stringValue == "2025-06-18")
-        #expect(result?["serverInfo"]?["name"]?.stringValue == "deck")
+        #expect(result?["serverInfo"]?["name"]?.stringValue == "baton")
         #expect(result?["capabilities"]?["tools"] != nil)
         #expect(result?["instructions"]?.stringValue != nil)
     }

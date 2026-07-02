@@ -5,7 +5,7 @@ import NIOHTTP1
 import NIOPosix
 
 /// Localhost HTTP server exposing the MCP endpoint at POST /mcp.
-public final class DeckServer {
+public final class BatonServer {
     public static let defaultPort = 8321
 
     private let mcp: MCPHandler
@@ -13,7 +13,7 @@ public final class DeckServer {
     private let group: MultiThreadedEventLoopGroup
     private var channel: Channel?
 
-    public init(mcp: MCPHandler, port: Int = DeckServer.defaultPort) {
+    public init(mcp: MCPHandler, port: Int = BatonServer.defaultPort) {
         self.mcp = mcp
         self.port = port
         self.group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
@@ -90,7 +90,7 @@ private final class HTTPHandler: ChannelInboundHandler {
             // No server-initiated stream and no session state.
             return MCPHandler.Response(status: 405, body: nil)
         case (.GET, "/health"):
-            return MCPHandler.Response(status: 200, body: Data(#"{"ok":true,"app":"deck"}"#.utf8))
+            return MCPHandler.Response(status: 200, body: Data(#"{"ok":true,"app":"baton"}"#.utf8))
         default:
             return MCPHandler.Response(status: 404, body: Data(#"{"error":"not found"}"#.utf8))
         }

@@ -1,6 +1,6 @@
 import Foundation
 
-public enum DeckError: Error, LocalizedError, Equatable {
+public enum BatonError: Error, LocalizedError, Equatable {
     case projectNotFound(name: String, available: [String])
     case noProjectForPath(cwd: String, available: [String])
     case projectRequired(available: [String])

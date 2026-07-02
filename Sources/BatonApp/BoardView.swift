@@ -1,9 +1,9 @@
-import DeckCore
+import BatonCore
 import SwiftUI
 
 struct BoardView: View {
     @EnvironmentObject var store: AppStore
-    @Environment(\.deckTheme) private var theme
+    @Environment(\.batonTheme) private var theme
 
     var body: some View {
         ScrollView(.horizontal) {
@@ -20,7 +20,7 @@ struct BoardView: View {
 
 struct ColumnView: View {
     @EnvironmentObject var store: AppStore
-    @Environment(\.deckTheme) private var theme
+    @Environment(\.batonTheme) private var theme
     let columnTickets: ColumnTickets
     let columnIndex: Int
 
@@ -120,7 +120,7 @@ struct ColumnView: View {
 
 struct TicketCardView: View {
     @EnvironmentObject var store: AppStore
-    @Environment(\.deckTheme) private var theme
+    @Environment(\.batonTheme) private var theme
     let ticket: Ticket
 
     var body: some View {

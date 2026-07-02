@@ -2,7 +2,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "Deck",
+    name: "Baton",
     platforms: [.macOS(.v14)],
     dependencies: [
         .package(url: "https://github.com/groue/GRDB.swift.git", from: "7.0.0"),
@@ -11,7 +11,7 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "DeckCore",
+            name: "BatonCore",
             dependencies: [
                 .product(name: "GRDB", package: "GRDB.swift"),
                 .product(name: "NIOCore", package: "swift-nio"),
@@ -22,16 +22,16 @@ let package = Package(
             swiftSettings: [.swiftLanguageMode(.v5)]
         ),
         .executableTarget(
-            name: "DeckApp",
+            name: "BatonApp",
             dependencies: [
-                "DeckCore",
+                "BatonCore",
                 .product(name: "MarkdownUI", package: "swift-markdown-ui"),
             ],
             swiftSettings: [.swiftLanguageMode(.v5)]
         ),
         .testTarget(
-            name: "DeckCoreTests",
-            dependencies: ["DeckCore"],
+            name: "BatonCoreTests",
+            dependencies: ["BatonCore"],
             swiftSettings: [.swiftLanguageMode(.v5)]
         ),
     ]

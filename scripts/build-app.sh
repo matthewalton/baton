@@ -1,15 +1,15 @@
 #!/bin/bash
-# Builds Deck in release mode and assembles dist/Deck.app.
+# Builds Baton in release mode and assembles dist/Baton.app.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 swift build -c release
 
-APP=dist/Deck.app
+APP=dist/Baton.app
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 
-cp .build/release/DeckApp "$APP/Contents/MacOS/Deck"
+cp .build/release/BatonApp "$APP/Contents/MacOS/Baton"
 
 ICONSET=$(mktemp -d)/AppIcon.iconset
 swift scripts/make-icon.swift "$ICONSET"
@@ -21,13 +21,13 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
 <plist version="1.0">
 <dict>
     <key>CFBundleName</key>
-    <string>Deck</string>
+    <string>Baton</string>
     <key>CFBundleDisplayName</key>
-    <string>Deck</string>
+    <string>Baton</string>
     <key>CFBundleIdentifier</key>
-    <string>com.mattalton.deck</string>
+    <string>com.mattalton.baton</string>
     <key>CFBundleExecutable</key>
-    <string>Deck</string>
+    <string>Baton</string>
     <key>CFBundleIconFile</key>
     <string>AppIcon</string>
     <key>CFBundlePackageType</key>

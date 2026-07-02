@@ -17,9 +17,9 @@ public struct AppDatabase {
             appropriateFor: nil,
             create: true
         )
-        let folder = support.appendingPathComponent("Deck", isDirectory: true)
+        let folder = support.appendingPathComponent("Baton", isDirectory: true)
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-        let dbQueue = try DatabaseQueue(path: folder.appendingPathComponent("deck.sqlite").path)
+        let dbQueue = try DatabaseQueue(path: folder.appendingPathComponent("baton.sqlite").path)
         return try AppDatabase(dbQueue: dbQueue)
     }
 

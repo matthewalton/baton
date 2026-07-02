@@ -1,6 +1,6 @@
-// Renders the Deck app icon into an .iconset directory.
+// Renders the Baton app icon into an .iconset directory.
 // Usage: swift scripts/make-icon.swift <output.iconset>
-// Design: iris-indigo squircle with a three-column kanban glyph.
+// Design: iris-indigo squircle with a diagonal relay-baton glyph.
 import AppKit
 import UniformTypeIdentifiers
 
@@ -63,19 +63,33 @@ func draw(in ctx: CGContext) {
     )
     ctx.restoreGState()
 
-    // Three kanban columns, top-aligned with staggered heights.
-    let barWidth: CGFloat = 130
-    let gap: CGFloat = 70
-    let top: CGFloat = 1024 - 300
-    let heights: [CGFloat] = [424, 296, 360]
-    var x: CGFloat = (1024 - (barWidth * 3 + gap * 2)) / 2
+    // Relay baton: a white capsule at 45° with two indigo grip bands.
+    ctx.saveGState()
+    ctx.translateBy(x: 512, y: 512)
+    ctx.rotate(by: .pi / 4)
+
+    let batonLength: CGFloat = 620
+    let batonWidth: CGFloat = 168
+    let capsule = CGPath(
+        roundedRect: CGRect(x: -batonLength / 2, y: -batonWidth / 2, width: batonLength, height: batonWidth),
+        cornerWidth: batonWidth / 2,
+        cornerHeight: batonWidth / 2,
+        transform: nil
+    )
+    ctx.setShadow(offset: CGSize(width: 0, height: -10), blur: 22, color: srgb(0x000000, 0.22))
+    ctx.addPath(capsule)
     ctx.setFillColor(srgb(0xFFFFFF, 0.95))
-    for height in heights {
-        let bar = CGRect(x: x, y: top - height, width: barWidth, height: height)
-        ctx.addPath(CGPath(roundedRect: bar, cornerWidth: 44, cornerHeight: 44, transform: nil))
-        ctx.fillPath()
-        x += barWidth + gap
+    ctx.fillPath()
+
+    // Grip bands, clipped to the capsule so their ends follow its curve.
+    ctx.setShadow(offset: .zero, blur: 0, color: nil)
+    ctx.addPath(capsule)
+    ctx.clip()
+    ctx.setFillColor(srgb(0x4952BE))
+    for centerX: CGFloat in [-168, 168] {
+        ctx.fill(CGRect(x: centerX - 27, y: -batonWidth / 2, width: 54, height: batonWidth))
     }
+    ctx.restoreGState()
 }
 
 func writePNG(points: Int, scale: Int) throws {

@@ -2,17 +2,17 @@ import Foundation
 
 /// Handles MCP JSON-RPC messages (streamable HTTP transport, tools only).
 public final class MCPHandler {
-    public static let serverName = "deck"
+    public static let serverName = "baton"
     public static let serverVersion = "1.0.0"
     static let supportedProtocolVersions = ["2024-11-05", "2025-03-26", "2025-06-18"]
     static let defaultProtocolVersion = "2025-03-26"
 
     static let instructions = """
-        Deck is the user's personal kanban board for tracking tickets/ideas across their \
+        Baton is the user's personal kanban board for tracking tickets/ideas across their \
         projects. Use it to defer ideas that come up while working (create_ticket into the \
         first column), record progress notes on tickets (add_note), and move tickets between \
         columns as work progresses. Always pass `cwd` (the absolute path of your session's \
-        working directory) so Deck can resolve which project you are working in; pass \
+        working directory) so Baton can resolve which project you are working in; pass \
         `project` only to target a different project by name. Before filing a new ticket, \
         consider search_tickets to avoid duplicates. Do not create projects without asking \
         the user first.
@@ -135,7 +135,7 @@ public final class MCPHandler {
                 ]),
                 "isError": .bool(false),
             ])
-        } catch let error as DeckError {
+        } catch let error as BatonError {
             return Self.toolError(error.errorDescription ?? "\(error)")
         } catch {
             return Self.toolError("Internal error: \(error.localizedDescription)")
@@ -163,14 +163,14 @@ public final class MCPHandler {
 // MARK: - Tool definitions
 
 extension MCPHandler {
-    private static let cwdDescription = "Absolute path of your session's working directory. Always pass this; Deck matches it against each project's registered folders."
+    private static let cwdDescription = "Absolute path of your session's working directory. Always pass this; Baton matches it against each project's registered folders."
     private static let projectDescription = "Project name. Only needed to override the cwd-based match or when no cwd is available."
 
     private func registerTools() {
         tools = [
             Tool(
                 name: "list_projects",
-                description: "List all Deck projects with their registered folder paths, board columns, and ticket counts.",
+                description: "List all Baton projects with their registered folder paths, board columns, and ticket counts.",
                 inputSchema: Self.schema(properties: [:], required: []),
                 handler: { [repository] _ in
                     .array(try repository.projects().map { detail in
@@ -185,7 +185,7 @@ extension MCPHandler {
             ),
             Tool(
                 name: "create_project",
-                description: "Create a new Deck project. Ask the user before creating one. Registers the given folder path so future cwd-based calls resolve to it. Columns default to Ideas, Backlog, In Progress, Done.",
+                description: "Create a new Baton project. Ask the user before creating one. Registers the given folder path so future cwd-based calls resolve to it. Columns default to Ideas, Backlog, In Progress, Done.",
                 inputSchema: Self.schema(
                     properties: [
                         "name": Self.prop("string", "Project name (unique)."),
@@ -461,7 +461,7 @@ extension MCPHandler {
 
     private static func requireString(_ args: [String: JSONValue], _ key: String) throws -> String {
         guard let value = args[key]?.stringValue, !value.trimmingCharacters(in: .whitespaces).isEmpty else {
-            throw DeckError.invalidInput("Missing required argument '\(key)'.")
+            throw BatonError.invalidInput("Missing required argument '\(key)'.")
         }
         return value
     }
@@ -469,14 +469,14 @@ extension MCPHandler {
     private static func requireId(_ args: [String: JSONValue]) throws -> Int64 {
         if let id = args["id"]?.intValue { return id }
         if let string = args["id"]?.stringValue, let id = Int64(string) { return id }
-        throw DeckError.invalidInput("Missing required integer argument 'id'.")
+        throw BatonError.invalidInput("Missing required integer argument 'id'.")
     }
 
     private static func parsePriority(_ value: JSONValue?) throws -> TicketPriority {
         guard let value else { return .none }
         guard let raw = value.stringValue, let priority = TicketPriority(rawValue: raw.lowercased()) else {
             let allowed = TicketPriority.allCases.map(\.rawValue).joined(separator: ", ")
-            throw DeckError.invalidInput("Invalid priority. Allowed values: \(allowed).")
+            throw BatonError.invalidInput("Invalid priority. Allowed values: \(allowed).")
         }
         return priority
     }

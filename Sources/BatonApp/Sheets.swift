@@ -1,5 +1,5 @@
 import AppKit
-import DeckCore
+import BatonCore
 import SwiftUI
 
 // MARK: - New project
@@ -251,7 +251,7 @@ struct TrashSheet: View {
         .padding(20)
         .frame(width: 520)
         .onAppear(perform: reload)
-        .onReceive(NotificationCenter.default.publisher(for: .deckDataDidChange)) { _ in
+        .onReceive(NotificationCenter.default.publisher(for: .batonDataDidChange)) { _ in
             reload()
         }
     }

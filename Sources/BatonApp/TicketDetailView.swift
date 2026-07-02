@@ -1,4 +1,4 @@
-import DeckCore
+import BatonCore
 import MarkdownUI
 import SwiftUI
 
@@ -39,7 +39,7 @@ struct TicketDetailView: View {
         }
         .frame(width: 620, height: 640)
         .onAppear(perform: reload)
-        .onReceive(NotificationCenter.default.publisher(for: .deckDataDidChange)) { _ in
+        .onReceive(NotificationCenter.default.publisher(for: .batonDataDidChange)) { _ in
             reload()
         }
     }

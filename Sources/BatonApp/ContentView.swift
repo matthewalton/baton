@@ -1,4 +1,4 @@
-import DeckCore
+import BatonCore
 import SwiftUI
 
 struct ContentView: View {
@@ -30,7 +30,7 @@ struct ContentView: View {
                 }
             }
         }
-        .alert("Deck", isPresented: errorBinding) {
+        .alert("Baton", isPresented: errorBinding) {
             Button("OK", role: .cancel) {}
         } message: {
             Text(store.errorMessage ?? "")

@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import DeckCore
+@testable import BatonCore
 
 struct RepositoryTests {
     let repository: Repository
@@ -24,7 +24,7 @@ struct RepositoryTests {
 
     @Test func duplicateProjectNameRejectedCaseInsensitively() throws {
         try makeProject(name: "Ankify")
-        #expect(throws: DeckError.projectNameTaken("ankify")) {
+        #expect(throws: BatonError.projectNameTaken("ankify")) {
             try repository.createProject(name: "ankify")
         }
     }
@@ -49,7 +49,7 @@ struct RepositoryTests {
 
     @Test func resolvePrefixMatchesWholeComponentsOnly() throws {
         try makeProject(name: "Ankify", path: "/Users/me/dev/ankify")
-        #expect(throws: DeckError.self) {
+        #expect(throws: BatonError.self) {
             try repository.resolveProject(name: nil, cwd: "/Users/me/dev/ankify-fork")
         }
     }
@@ -59,7 +59,7 @@ struct RepositoryTests {
         do {
             _ = try repository.resolveProject(name: nil, cwd: "/somewhere/else")
             Issue.record("expected an error")
-        } catch let error as DeckError {
+        } catch let error as BatonError {
             guard case let .noProjectForPath(_, available) = error else {
                 Issue.record("wrong error: \(error)")
                 return
@@ -97,7 +97,7 @@ struct RepositoryTests {
         let project = try makeProject()
         let ticket = try repository.createTicket(projectId: project.id!, columnName: "Backlog", title: "T")
 
-        #expect(throws: DeckError.self) {
+        #expect(throws: BatonError.self) {
             try repository.deleteColumn(projectId: project.id!, name: "Backlog", moveTicketsTo: nil)
         }
 
@@ -108,7 +108,7 @@ struct RepositoryTests {
 
     @Test func cannotDeleteLastColumn() throws {
         let project = try repository.createProject(name: "One", columnNames: ["Only"])
-        #expect(throws: DeckError.lastColumn) {
+        #expect(throws: BatonError.lastColumn) {
             try repository.deleteColumn(projectId: project.id!, name: "Only", moveTicketsTo: nil)
         }
     }
@@ -152,7 +152,7 @@ struct RepositoryTests {
         _ = try repository.softDeleteTicket(id: ticket.id!)
         #expect(try repository.purgeTrash(olderThanDays: 30) == 0, "fresh trash survives the purge")
         #expect(try repository.purgeTrash(olderThanDays: -1) == 1, "old trash is purged")
-        #expect(throws: DeckError.ticketNotFound(ticket.id!)) {
+        #expect(throws: BatonError.ticketNotFound(ticket.id!)) {
             try repository.ticketDetail(id: ticket.id!)
         }
     }

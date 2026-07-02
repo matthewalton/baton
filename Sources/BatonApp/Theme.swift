@@ -129,13 +129,13 @@ private extension NSColor {
     }
 }
 
-private struct DeckThemeKey: EnvironmentKey {
+private struct BatonThemeKey: EnvironmentKey {
     static let defaultValue = Theme(palette: .graphiteIris, tintedColumns: true)
 }
 
 extension EnvironmentValues {
-    var deckTheme: Theme {
-        get { self[DeckThemeKey.self] }
-        set { self[DeckThemeKey.self] = newValue }
+    var batonTheme: Theme {
+        get { self[BatonThemeKey.self] }
+        set { self[BatonThemeKey.self] = newValue }
     }
 }

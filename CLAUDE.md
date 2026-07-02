@@ -1,20 +1,20 @@
-# Deck
+# Baton
 
 Native SwiftUI macOS kanban app with an embedded MCP server (streamable HTTP, port 8321). SPM package, no Xcode project.
 
 ## Commands
 
-- Build app bundle: `./scripts/build-app.sh` → `dist/Deck.app`
+- Build app bundle: `./scripts/build-app.sh` → `dist/Baton.app`
 - Tests: `./scripts/test.sh` (plain `swift test` fails — Command Line Tools keep Testing.framework outside default search paths; the script adds the flags)
 - Debug build: `swift build`
 
 ## Layout
 
-- `Sources/DeckCore` — models, GRDB schema/migrations (`AppDatabase`), all data operations (`Repository`), MCP JSON-RPC + tools (`MCPHandler`), NIO HTTP server (`DeckServer`). UI-independent, fully tested.
-- `Sources/DeckApp` — SwiftUI app. `AppStore` is the single ObservableObject; views never touch GRDB directly (they go through `store` / `store.repository`).
-- Theming lives in `Theme.swift` (palettes, column tints, appearance override), driven by `@AppStorage` keys and exposed via the `\.deckTheme` environment; the picker is the app Settings window (⌘,). Priority badge colors stay fixed across themes.
+- `Sources/BatonCore` — models, GRDB schema/migrations (`AppDatabase`), all data operations (`Repository`), MCP JSON-RPC + tools (`MCPHandler`), NIO HTTP server (`BatonServer`). UI-independent, fully tested.
+- `Sources/BatonApp` — SwiftUI app. `AppStore` is the single ObservableObject; views never touch GRDB directly (they go through `store` / `store.repository`).
+- Theming lives in `Theme.swift` (palettes, column tints, appearance override), driven by `@AppStorage` keys and exposed via the `\.batonTheme` environment; the picker is the app Settings window (⌘,). Priority badge colors stay fixed across themes.
 - The app icon is generated at bundle time by `scripts/make-icon.swift` (called from `build-app.sh`); edit the script, not a PNG.
-- Live UI refresh works via `Notification.Name.deckDataDidChange`, posted after every `Repository` write (MCP writes included — same process).
+- Live UI refresh works via `Notification.Name.batonDataDidChange`, posted after every `Repository` write (MCP writes included — same process).
 
 ## Conventions
 

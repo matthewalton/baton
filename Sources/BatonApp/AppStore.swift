@@ -1,6 +1,6 @@
 import AppKit
 import Combine
-import DeckCore
+import BatonCore
 import SwiftUI
 
 /// Identifiable wrapper so a ticket id can drive a sheet.
@@ -11,7 +11,7 @@ struct TicketSelection: Identifiable, Equatable {
 @MainActor
 final class AppStore: ObservableObject {
     let repository: Repository
-    private var server: DeckServer?
+    private var server: BatonServer?
     private var observer: NSObjectProtocol?
 
     @Published var projects: [ProjectDetail] = []
@@ -36,7 +36,7 @@ final class AppStore: ObservableObject {
     init(repository: Repository) {
         self.repository = repository
         observer = NotificationCenter.default.addObserver(
-            forName: .deckDataDidChange,
+            forName: .batonDataDidChange,
             object: nil,
             queue: .main
         ) { [weak self] _ in
@@ -54,19 +54,19 @@ final class AppStore: ObservableObject {
     }
 
     var mcpEndpoint: String {
-        "http://127.0.0.1:\(DeckServer.defaultPort)/mcp"
+        "http://127.0.0.1:\(BatonServer.defaultPort)/mcp"
     }
 
     // MARK: - Server
 
     private func startServer() {
-        let server = DeckServer(mcp: MCPHandler(repository: repository))
+        let server = BatonServer(mcp: MCPHandler(repository: repository))
         do {
             try server.start()
             self.server = server
             serverError = nil
         } catch {
-            serverError = "MCP server failed to start on port \(DeckServer.defaultPort): \(error.localizedDescription). Is another copy of Deck running?"
+            serverError = "MCP server failed to start on port \(BatonServer.defaultPort): \(error.localizedDescription). Is another copy of Baton running?"
         }
     }
 
@@ -235,7 +235,7 @@ final class AppStore: ObservableObject {
     func attempt(_ work: () throws -> Void) {
         do {
             try work()
-        } catch let error as DeckError {
+        } catch let error as BatonError {
             errorMessage = error.errorDescription
         } catch {
             errorMessage = error.localizedDescription

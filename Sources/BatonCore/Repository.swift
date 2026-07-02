@@ -2,8 +2,8 @@ import Foundation
 import GRDB
 
 public extension Notification.Name {
-    /// Posted (on the main queue) after any write to the Deck database.
-    static let deckDataDidChange = Notification.Name("deckDataDidChange")
+    /// Posted (on the main queue) after any write to the Baton database.
+    static let batonDataDidChange = Notification.Name("batonDataDidChange")
 }
 
 public struct ProjectDetail: Identifiable, Equatable {
@@ -58,7 +58,7 @@ public final class Repository {
     @discardableResult
     public func createProject(name: String, paths: [String] = [], columnNames: [String]? = nil) throws -> Project {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { throw DeckError.invalidInput("Project name cannot be empty.") }
+        guard !trimmed.isEmpty else { throw BatonError.invalidInput("Project name cannot be empty.") }
 
         var requestedColumns = (columnNames ?? Self.defaultColumnNames)
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
@@ -67,12 +67,12 @@ public final class Repository {
             requestedColumns = Self.defaultColumnNames
         }
         guard Set(requestedColumns.map { $0.lowercased() }).count == requestedColumns.count else {
-            throw DeckError.invalidInput("Column names must be unique.")
+            throw BatonError.invalidInput("Column names must be unique.")
         }
 
         let project = try write { db in
             if try Project.filter(Column("name") == trimmed).fetchOne(db) != nil {
-                throw DeckError.projectNameTaken(trimmed)
+                throw BatonError.projectNameTaken(trimmed)
             }
             var project = Project(name: trimmed)
             try project.insert(db)
@@ -90,7 +90,7 @@ public final class Repository {
                 let normalized = ProjectPath.normalize(raw)
                 guard !normalized.isEmpty else { continue }
                 if try ProjectPath.filter(Column("path") == normalized).fetchOne(db) != nil {
-                    throw DeckError.invalidInput("Path '\(normalized)' is already registered to another project.")
+                    throw BatonError.invalidInput("Path '\(normalized)' is already registered to another project.")
                 }
                 var projectPath = ProjectPath(projectId: project.id!, path: normalized)
                 try projectPath.insert(db)
@@ -125,7 +125,7 @@ public final class Repository {
     public func project(id: Int64) throws -> Project {
         try dbQueue.read { db in
             guard let project = try Project.fetchOne(db, key: id) else {
-                throw DeckError.invalidInput("No project with id \(id).")
+                throw BatonError.invalidInput("No project with id \(id).")
             }
             return project
         }
@@ -133,13 +133,13 @@ public final class Repository {
 
     public func renameProject(id: Int64, to name: String) throws {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { throw DeckError.invalidInput("Project name cannot be empty.") }
+        guard !trimmed.isEmpty else { throw BatonError.invalidInput("Project name cannot be empty.") }
         try write { db in
             if let existing = try Project.filter(Column("name") == trimmed).fetchOne(db), existing.id != id {
-                throw DeckError.projectNameTaken(trimmed)
+                throw BatonError.projectNameTaken(trimmed)
             }
             guard var project = try Project.fetchOne(db, key: id) else {
-                throw DeckError.invalidInput("No project with id \(id).")
+                throw BatonError.invalidInput("No project with id \(id).")
             }
             project.name = trimmed
             try project.update(db)
@@ -158,12 +158,12 @@ public final class Repository {
     public func addPath(projectId: Int64, path raw: String) throws -> ProjectPath {
         let normalized = ProjectPath.normalize(raw)
         guard !normalized.isEmpty, normalized != "/" else {
-            throw DeckError.invalidInput("'\(raw)' is not a usable project path.")
+            throw BatonError.invalidInput("'\(raw)' is not a usable project path.")
         }
         return try write { db in
             if let existing = try ProjectPath.filter(Column("path") == normalized).fetchOne(db) {
                 let owner = try Project.fetchOne(db, key: existing.projectId)?.name ?? "?"
-                throw DeckError.invalidInput("Path '\(normalized)' is already registered to project '\(owner)'.")
+                throw BatonError.invalidInput("Path '\(normalized)' is already registered to project '\(owner)'.")
             }
             var projectPath = ProjectPath(projectId: projectId, path: normalized)
             try projectPath.insert(db)
@@ -187,7 +187,7 @@ public final class Repository {
             if let name, !name.trimmingCharacters(in: .whitespaces).isEmpty {
                 let trimmed = name.trimmingCharacters(in: .whitespaces)
                 guard let project = try Project.filter(Column("name") == trimmed).fetchOne(db) else {
-                    throw DeckError.projectNotFound(name: trimmed, available: available)
+                    throw BatonError.projectNotFound(name: trimmed, available: available)
                 }
                 return project
             }
@@ -199,12 +199,12 @@ public final class Repository {
                     .filter { normalizedCwd == $0.path || normalizedCwd.hasPrefix($0.path + "/") }
                     .max { $0.path.count < $1.path.count }
                 guard let best, let project = try Project.fetchOne(db, key: best.projectId) else {
-                    throw DeckError.noProjectForPath(cwd: normalizedCwd, available: available)
+                    throw BatonError.noProjectForPath(cwd: normalizedCwd, available: available)
                 }
                 return project
             }
 
-            throw DeckError.projectRequired(available: available)
+            throw BatonError.projectRequired(available: available)
         }
     }
 
@@ -219,11 +219,11 @@ public final class Repository {
     @discardableResult
     public func addColumn(projectId: Int64, name: String) throws -> BoardColumn {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { throw DeckError.invalidInput("Column name cannot be empty.") }
+        guard !trimmed.isEmpty else { throw BatonError.invalidInput("Column name cannot be empty.") }
         return try write { db in
             let existing = try Self.orderedColumns(db, projectId: projectId)
             if existing.contains(where: { $0.name.lowercased() == trimmed.lowercased() }) {
-                throw DeckError.columnNameTaken(trimmed)
+                throw BatonError.columnNameTaken(trimmed)
             }
             let position = (existing.last?.position ?? 0) + Self.positionGap
             var column = BoardColumn(projectId: projectId, name: trimmed, position: position)
@@ -234,13 +234,13 @@ public final class Repository {
 
     public func renameColumn(projectId: Int64, from: String, to: String) throws {
         let trimmed = to.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { throw DeckError.invalidInput("Column name cannot be empty.") }
+        guard !trimmed.isEmpty else { throw BatonError.invalidInput("Column name cannot be empty.") }
         try write { db in
             var column = try Self.column(db, projectId: projectId, named: from)
             let clash = try Self.orderedColumns(db, projectId: projectId)
                 .contains { $0.id != column.id && $0.name.lowercased() == trimmed.lowercased() }
             if clash {
-                throw DeckError.columnNameTaken(trimmed)
+                throw BatonError.columnNameTaken(trimmed)
             }
             column.name = trimmed
             try column.update(db)
@@ -251,17 +251,17 @@ public final class Repository {
         try write { db in
             let column = try Self.column(db, projectId: projectId, named: name)
             let all = try Self.orderedColumns(db, projectId: projectId)
-            guard all.count > 1 else { throw DeckError.lastColumn }
+            guard all.count > 1 else { throw BatonError.lastColumn }
 
             let residents = try Ticket.filter(Column("columnId") == column.id!).fetchAll(db)
             if !residents.isEmpty {
                 guard let targetName = moveTicketsTo else {
                     let liveCount = residents.filter { $0.deletedAt == nil }.count
-                    throw DeckError.columnNotEmpty(name: column.name, ticketCount: max(liveCount, residents.count))
+                    throw BatonError.columnNotEmpty(name: column.name, ticketCount: max(liveCount, residents.count))
                 }
                 let target = try Self.column(db, projectId: projectId, named: targetName)
                 guard target.id != column.id else {
-                    throw DeckError.invalidInput("Cannot move tickets into the column being deleted.")
+                    throw BatonError.invalidInput("Cannot move tickets into the column being deleted.")
                 }
                 var nextPosition = try Self.bottomPosition(db, columnId: target.id!)
                 for var ticket in residents.sorted(by: { $0.position < $1.position }) {
@@ -284,7 +284,7 @@ public final class Repository {
                   Set(requested.map { $0.lowercased() }).count == existing.count,
                   requested.allSatisfy({ byName[$0.lowercased()] != nil })
             else {
-                throw DeckError.invalidInput(
+                throw BatonError.invalidInput(
                     "order must list every column exactly once. Columns: \(existing.map(\.name).joined(separator: ", "))"
                 )
             }
@@ -323,14 +323,14 @@ public final class Repository {
         tags: [String] = []
     ) throws -> Ticket {
         let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmedTitle.isEmpty else { throw DeckError.invalidInput("Ticket title cannot be empty.") }
+        guard !trimmedTitle.isEmpty else { throw BatonError.invalidInput("Ticket title cannot be empty.") }
         return try write { db in
             let column: BoardColumn
             if let columnName {
                 column = try Self.column(db, projectId: projectId, named: columnName)
             } else {
                 guard let first = try Self.orderedColumns(db, projectId: projectId).first else {
-                    throw DeckError.invalidInput("Project has no columns.")
+                    throw BatonError.invalidInput("Project has no columns.")
                 }
                 column = first
             }
@@ -351,7 +351,7 @@ public final class Repository {
     public func ticketDetail(id: Int64) throws -> TicketDetail {
         try dbQueue.read { db in
             guard let ticket = try Ticket.fetchOne(db, key: id) else {
-                throw DeckError.ticketNotFound(id)
+                throw BatonError.ticketNotFound(id)
             }
             return TicketDetail(
                 ticket: ticket,
@@ -375,11 +375,11 @@ public final class Repository {
     ) throws -> Ticket {
         try write { db in
             guard var ticket = try Ticket.fetchOne(db, key: id) else {
-                throw DeckError.ticketNotFound(id)
+                throw BatonError.ticketNotFound(id)
             }
             if let title {
                 let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
-                guard !trimmed.isEmpty else { throw DeckError.invalidInput("Ticket title cannot be empty.") }
+                guard !trimmed.isEmpty else { throw BatonError.invalidInput("Ticket title cannot be empty.") }
                 ticket.title = trimmed
             }
             if let details { ticket.details = details }
@@ -395,7 +395,7 @@ public final class Repository {
     public func moveTicket(id: Int64, toColumnNamed columnName: String, placement: TicketPlacement = .top) throws -> Ticket {
         try write { db in
             guard var ticket = try Ticket.fetchOne(db, key: id) else {
-                throw DeckError.ticketNotFound(id)
+                throw BatonError.ticketNotFound(id)
             }
             let column = try Self.column(db, projectId: ticket.projectId, named: columnName)
             ticket.columnId = column.id!
@@ -415,10 +415,10 @@ public final class Repository {
     public func reorderTicket(id: Int64, toColumnId columnId: Int64, position: Double) throws {
         try write { db in
             guard var ticket = try Ticket.fetchOne(db, key: id) else {
-                throw DeckError.ticketNotFound(id)
+                throw BatonError.ticketNotFound(id)
             }
             guard let column = try BoardColumn.fetchOne(db, key: columnId), column.projectId == ticket.projectId else {
-                throw DeckError.invalidInput("Target column does not belong to the ticket's project.")
+                throw BatonError.invalidInput("Target column does not belong to the ticket's project.")
             }
             ticket.columnId = columnId
             ticket.position = position
@@ -431,7 +431,7 @@ public final class Repository {
     public func softDeleteTicket(id: Int64) throws -> Ticket {
         try write { db in
             guard var ticket = try Ticket.fetchOne(db, key: id) else {
-                throw DeckError.ticketNotFound(id)
+                throw BatonError.ticketNotFound(id)
             }
             ticket.deletedAt = Date()
             ticket.updatedAt = Date()
@@ -444,7 +444,7 @@ public final class Repository {
     public func restoreTicket(id: Int64) throws -> Ticket {
         try write { db in
             guard var ticket = try Ticket.fetchOne(db, key: id) else {
-                throw DeckError.ticketNotFound(id)
+                throw BatonError.ticketNotFound(id)
             }
             ticket.deletedAt = nil
             ticket.updatedAt = Date()
@@ -485,10 +485,10 @@ public final class Repository {
     @discardableResult
     public func addNote(ticketId: Int64, author: String, body: String) throws -> Note {
         let trimmed = body.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { throw DeckError.invalidInput("Note body cannot be empty.") }
+        guard !trimmed.isEmpty else { throw BatonError.invalidInput("Note body cannot be empty.") }
         return try write { db in
             guard var ticket = try Ticket.fetchOne(db, key: ticketId) else {
-                throw DeckError.ticketNotFound(ticketId)
+                throw BatonError.ticketNotFound(ticketId)
             }
             var note = Note(ticketId: ticketId, author: author, body: trimmed)
             try note.insert(db)
@@ -554,7 +554,7 @@ public final class Repository {
         let columns = try orderedColumns(db, projectId: projectId)
         let trimmed = name.trimmingCharacters(in: .whitespaces)
         guard let column = columns.first(where: { $0.name.lowercased() == trimmed.lowercased() }) else {
-            throw DeckError.columnNotFound(name: trimmed, available: columns.map(\.name))
+            throw BatonError.columnNotFound(name: trimmed, available: columns.map(\.name))
         }
         return column
     }
@@ -581,7 +581,7 @@ public final class Repository {
     private func write<T>(_ updates: @escaping (Database) throws -> T) throws -> T {
         let result = try dbQueue.write(updates)
         DispatchQueue.main.async {
-            NotificationCenter.default.post(name: .deckDataDidChange, object: nil)
+            NotificationCenter.default.post(name: .batonDataDidChange, object: nil)
         }
         return result
     }
