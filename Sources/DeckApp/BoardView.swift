@@ -3,23 +3,26 @@ import SwiftUI
 
 struct BoardView: View {
     @EnvironmentObject var store: AppStore
+    @Environment(\.deckTheme) private var theme
 
     var body: some View {
         ScrollView(.horizontal) {
             HStack(alignment: .top, spacing: 12) {
-                ForEach(store.board, id: \.column.id) { columnTickets in
-                    ColumnView(columnTickets: columnTickets)
+                ForEach(Array(store.board.enumerated()), id: \.element.column.id) { index, columnTickets in
+                    ColumnView(columnTickets: columnTickets, columnIndex: index)
                 }
             }
             .padding(12)
         }
-        .background(Color(nsColor: .underPageBackgroundColor))
+        .background(theme.boardBackground)
     }
 }
 
 struct ColumnView: View {
     @EnvironmentObject var store: AppStore
+    @Environment(\.deckTheme) private var theme
     let columnTickets: ColumnTickets
+    let columnIndex: Int
 
     @State private var isTargeted = false
     @State private var renaming = false
@@ -51,11 +54,15 @@ struct ColumnView: View {
         .frame(maxHeight: .infinity, alignment: .top)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(Color(nsColor: .windowBackgroundColor).opacity(isTargeted ? 1.0 : 0.6))
+                .fill(theme.columnFill(at: columnIndex))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(theme.accent.opacity(isTargeted ? 0.06 : 0))
+                )
         )
         .overlay(
             RoundedRectangle(cornerRadius: 10)
-                .strokeBorder(isTargeted ? Color.accentColor : Color.primary.opacity(0.08))
+                .strokeBorder(isTargeted ? theme.accent : theme.columnBorder)
         )
         .dropDestination(for: String.self) { items, _ in
             guard let payload = items.first else { return false }
@@ -75,6 +82,7 @@ struct ColumnView: View {
         HStack {
             Text(column.name)
                 .font(.headline)
+                .foregroundStyle(theme.columnName(at: columnIndex) ?? Color.primary)
             Text("\(visibleTickets.count)")
                 .font(.caption.monospacedDigit())
                 .foregroundStyle(.secondary)
@@ -112,6 +120,7 @@ struct ColumnView: View {
 
 struct TicketCardView: View {
     @EnvironmentObject var store: AppStore
+    @Environment(\.deckTheme) private var theme
     let ticket: Ticket
 
     var body: some View {
@@ -154,8 +163,8 @@ struct TicketCardView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 8)
-                .fill(Color(nsColor: .controlBackgroundColor))
-                .shadow(color: .black.opacity(0.12), radius: 1, y: 1)
+                .fill(theme.cardFill)
+                .shadow(color: theme.cardShadow, radius: 1, y: 1)
         )
         .contentShape(RoundedRectangle(cornerRadius: 8))
         .draggable(String(ticket.id ?? 0))
