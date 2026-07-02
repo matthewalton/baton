@@ -1,6 +1,7 @@
 // Renders the Baton app icon into an .iconset directory.
 // Usage: swift scripts/make-icon.swift <output.iconset>
-// Design: iris-indigo squircle with a diagonal relay-baton glyph.
+// Design: burnt-orange squircle with a relay baton mid-handoff — a hollow
+// white tube at 45° with speed streaks trailing behind it.
 import AppKit
 import UniformTypeIdentifiers
 
@@ -33,15 +34,15 @@ func draw(in ctx: CGContext) {
     ctx.saveGState()
     ctx.setShadow(offset: CGSize(width: 0, height: -14), blur: 28, color: srgb(0x000000, 0.30))
     ctx.addPath(squircle)
-    ctx.setFillColor(srgb(0x4952BE))
+    ctx.setFillColor(srgb(0xE05A1A))
     ctx.fillPath()
     ctx.restoreGState()
 
-    // Vertical iris gradient.
+    // Vertical burnt-orange gradient.
     ctx.saveGState()
     ctx.addPath(squircle)
     ctx.clip()
-    let colors = [srgb(0x6875E4), srgb(0x4952BE)] as CFArray
+    let colors = [srgb(0xF98A3C), srgb(0xE05A1A)] as CFArray
     let gradient = CGGradient(colorsSpace: CGColorSpace(name: CGColorSpace.sRGB), colors: colors, locations: [0, 1])!
     ctx.drawLinearGradient(
         gradient,
@@ -63,32 +64,47 @@ func draw(in ctx: CGContext) {
     )
     ctx.restoreGState()
 
-    // Relay baton: a white capsule at 45° with two indigo grip bands.
+    // Relay baton mid-handoff: axes rotated 45° so +x runs along the baton,
+    // pointing up-right. Drawn as an open cylinder — the elliptical mouth at
+    // the leading end is what makes it read as a tube.
     ctx.saveGState()
     ctx.translateBy(x: 512, y: 512)
     ctx.rotate(by: .pi / 4)
 
-    let batonLength: CGFloat = 620
-    let batonWidth: CGFloat = 168
-    let capsule = CGPath(
-        roundedRect: CGRect(x: -batonLength / 2, y: -batonWidth / 2, width: batonLength, height: batonWidth),
-        cornerWidth: batonWidth / 2,
-        cornerHeight: batonWidth / 2,
-        transform: nil
+    let tubeWidth: CGFloat = 148          // baton diameter
+    let tubeBack: CGFloat = -220          // trailing end along the axis
+    let tubeFront: CGFloat = 280          // leading end (mouth) along the axis
+    let endDepth: CGFloat = tubeWidth * 0.30  // ellipse semi-axis giving the cylinder its 3D tilt
+
+    // Speed streaks trailing the baton, slightly translucent.
+    ctx.setFillColor(srgb(0xFFFFFF, 0.65))
+    for streak in [CGRect(x: -430, y: -76, width: 150, height: 44),
+                   CGRect(x: -470, y: 32, width: 190, height: 44)] {
+        ctx.addPath(CGPath(roundedRect: streak, cornerWidth: 22, cornerHeight: 22, transform: nil))
+    }
+    ctx.fillPath()
+
+    // Tube body: rectangle with a rounded trailing end and an elliptical bulge
+    // at the leading end (the far rim of the mouth).
+    let body = CGMutablePath()
+    body.addRoundedRect(
+        in: CGRect(x: tubeBack, y: -tubeWidth / 2, width: tubeFront - tubeBack, height: tubeWidth),
+        cornerWidth: 30,
+        cornerHeight: 30
     )
+    body.addEllipse(in: CGRect(x: tubeFront - endDepth, y: -tubeWidth / 2, width: endDepth * 2, height: tubeWidth))
     ctx.setShadow(offset: CGSize(width: 0, height: -10), blur: 22, color: srgb(0x000000, 0.22))
-    ctx.addPath(capsule)
+    ctx.addPath(body)
     ctx.setFillColor(srgb(0xFFFFFF, 0.95))
     ctx.fillPath()
 
-    // Grip bands, clipped to the capsule so their ends follow its curve.
+    // Mouth of the tube: a darker inset ellipse reads as the hollow inside.
     ctx.setShadow(offset: .zero, blur: 0, color: nil)
-    ctx.addPath(capsule)
-    ctx.clip()
-    ctx.setFillColor(srgb(0x4952BE))
-    for centerX: CGFloat in [-168, 168] {
-        ctx.fill(CGRect(x: centerX - 27, y: -batonWidth / 2, width: 54, height: batonWidth))
-    }
+    let mouthDepth = endDepth * 0.62
+    let mouthRadius = tubeWidth / 2 * 0.62
+    ctx.addEllipse(in: CGRect(x: tubeFront - mouthDepth, y: -mouthRadius, width: mouthDepth * 2, height: mouthRadius * 2))
+    ctx.setFillColor(srgb(0xC24E12))
+    ctx.fillPath()
     ctx.restoreGState()
 }
 
