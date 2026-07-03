@@ -3,7 +3,9 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-swift build -c release
+# BATON_SWIFT_FLAGS lets already-sandboxed environments (e.g. the Homebrew
+# formula) pass --disable-sandbox — SwiftPM's own sandbox can't nest inside one.
+swift build -c release ${BATON_SWIFT_FLAGS:-}
 
 APP=dist/Baton.app
 rm -rf "$APP"

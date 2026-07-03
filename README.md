@@ -43,10 +43,20 @@ Baton embeds a localhost HTTP server that speaks MCP (streamable HTTP) directly 
 
 ## 🚀 Getting started
 
-Requires macOS 14+ and the Swift 6 toolchain (Command Line Tools are enough; full Xcode not required).
+Requires macOS 14+ and the Swift 6 toolchain (Command Line Tools are enough; full Xcode not required). Baton builds from source on your machine, so there's no Gatekeeper quarantine to fight.
+
+**Homebrew** (builds from source via a tap on this repo):
 
 ```sh
-git clone <this repo> && cd baton
+brew tap matthewalton/baton https://github.com/matthewalton/baton
+brew install --HEAD baton
+cp -R "$(brew --prefix baton)/Baton.app" /Applications/
+```
+
+**Or clone and build:**
+
+```sh
+git clone https://github.com/matthewalton/baton.git && cd baton
 ./scripts/build-app.sh     # builds dist/Baton.app (ad-hoc signed)
 open dist/Baton.app
 ```
@@ -55,13 +65,28 @@ Move `dist/Baton.app` to `/Applications` if you like, or run it in place. Tests 
 
 ### Connect Claude Code
 
+The recommended route is the bundled **plugin** — it registers the MCP server for you, launches Baton at session start if it isn't already running, and adds board workflow skills:
+
+```
+/plugin marketplace add matthewalton/baton
+/plugin install baton@baton
+```
+
+The skills — `/baton:capture`, `/baton:next`, `/baton:recap`, `/baton:triage` — are documented in [`skills/`](skills/README.md). You don't need to invoke them by name: Claude picks them up from natural language, so "add this as an idea", "what should I work on", or "where was I" just work.
+
+Prefer just the raw tools? A plain MCP registration works too:
+
 ```sh
 claude mcp add --transport http --scope user baton http://127.0.0.1:8321/mcp
 ```
 
-`--scope user` makes Baton available in every repo. Claude discovers the tools automatically; the server's instructions tell it to always pass its working directory so tickets land in the right project. Then, mid-session:
+Either way, Claude discovers the tools automatically; the server's instructions tell it to always pass its working directory so tickets land in the right project. Then, mid-session:
 
 > *"Good idea, but out of scope — I'll put it on the board."* 🎉
+
+### Connect other agents
+
+Baton speaks standard MCP over streamable HTTP, so Codex, Cursor, Copilot, Gemini CLI, and any other MCP-capable agent connect with one config entry — and the server ships its usage conventions in the MCP `instructions` field, so every client's model picks them up automatically. Config snippets per agent are in [`docs/mcp.md`](docs/mcp.md).
 
 ## 🎨 Themes
 
@@ -76,39 +101,4 @@ Priority badge colors stay fixed across themes, so urgent always reads as urgent
 
 ## 🛠 MCP tools
 
-| Tool | Purpose |
-|---|---|
-| `list_projects` | Projects with paths, columns, ticket counts |
-| `create_project` | New project (+ registered folder, custom columns) |
-| `get_board` | Columns and tickets for a project |
-| `create_ticket` | File an idea/bug/follow-up (lands top of first column) |
-| `get_ticket` | Full detail including notes timeline |
-| `update_ticket` | Change title/description/priority/tags |
-| `move_ticket` | Move between columns (top or bottom) |
-| `add_note` | Append a timestamped note |
-| `delete_ticket` / `restore_ticket` | Trash and restore |
-| `search_tickets` | Substring search across titles, descriptions, tags, notes |
-| `add_column` / `rename_column` / `delete_column` / `reorder_columns` | Board management |
-
-Project resolution for project-scoped tools: an explicit `project` name beats `cwd` matching, and an unmatched `cwd` returns an error listing known projects rather than filing anything silently.
-
-## 🏗 Architecture
-
-```
-Sources/
-├── BatonCore/    UI-independent, fully tested
-│   ├── Models + GRDB schema & migrations (AppDatabase)
-│   ├── All data operations (Repository)
-│   ├── MCP JSON-RPC + tool definitions (MCPHandler)
-│   └── SwiftNIO HTTP server (BatonServer)
-└── BatonApp/     SwiftUI app
-    ├── Single ObservableObject store (AppStore)
-    ├── Board, ticket detail, sheets, drag & drop
-    └── Theming (Theme.swift)
-```
-
-Plain SPM package — no Xcode project. The app and the MCP server share one process and one `Repository`, so every write (agent or human) refreshes the UI through a single notification.
-
-## 🔭 Not in v1 (deliberately)
-
-Menu-bar residency / start-at-login, auth on the endpoint, archive view, cross-project inbox, and sync. All addable without schema changes.
+Fifteen tools cover the whole board: projects, columns, tickets, notes, moves, search, and trash/restore. The full table — plus how project resolution works — lives in [`docs/mcp.md`](docs/mcp.md).

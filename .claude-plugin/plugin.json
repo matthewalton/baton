@@ -1,0 +1,11 @@
+{
+  "name": "baton",
+  "version": "0.1.0",
+  "description": "Connect Claude Code to the Baton kanban app: auto-registers the MCP server, launches Baton at session start, and adds board workflow skills (/baton:capture, /baton:next, /baton:recap, /baton:triage) that Claude invokes from natural language.",
+  "author": {
+    "name": "Matt Alton",
+    "url": "https://github.com/matthewalton"
+  },
+  "homepage": "https://github.com/matthewalton/baton",
+  "keywords": ["kanban", "tickets", "mcp", "project-management"]
+}

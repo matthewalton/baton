@@ -1,0 +1,15 @@
+{
+  "name": "baton",
+  "description": "Plugin marketplace for Baton, the native macOS kanban board with a built-in MCP server.",
+  "owner": {
+    "name": "Matt Alton",
+    "url": "https://github.com/matthewalton"
+  },
+  "plugins": [
+    {
+      "name": "baton",
+      "source": "./",
+      "description": "Connect Claude Code to the Baton kanban app: auto-registers the MCP server, launches Baton at session start, and adds board workflow skills."
+    }
+  ]
+}
