@@ -2,6 +2,7 @@ import AppKit
 import SwiftUI
 
 enum ThemePalette: String, CaseIterable, Identifiable {
+    case ember
     case graphiteIris
     case paperPine
     case harbor
@@ -10,6 +11,7 @@ enum ThemePalette: String, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
+        case .ember: return "Ember"
         case .graphiteIris: return "Graphite & Iris"
         case .paperPine: return "Paper & Pine"
         case .harbor: return "Harbor"
@@ -43,6 +45,7 @@ struct Theme {
 
     var accent: Color {
         switch palette {
+        case .ember: return dynamic(light: "#E05A1A", dark: "#F98A3C")
         case .graphiteIris: return dynamic(light: "#5E6AD2", dark: "#7B87E8")
         case .paperPine: return dynamic(light: "#3E7C5B", dark: "#5FA37E")
         case .harbor: return dynamic(light: "#0E8C8C", dark: "#3ECFB2")
@@ -51,6 +54,7 @@ struct Theme {
 
     var boardBackground: Color {
         switch palette {
+        case .ember: return dynamic(light: "#F8F2EC", dark: "#1C1511")
         case .graphiteIris: return dynamic(light: "#F4F4F6", dark: "#17171C")
         case .paperPine: return dynamic(light: "#F5F2EA", dark: "#201E1A")
         case .harbor: return dynamic(light: "#F1F5F6", dark: "#0F1518")
@@ -59,6 +63,7 @@ struct Theme {
 
     var cardFill: Color {
         switch palette {
+        case .ember: return dynamic(light: "#FFFDFA", dark: "#2C231D")
         case .graphiteIris: return dynamic(light: "#FFFFFF", dark: "#27272F")
         case .paperPine: return dynamic(light: "#FFFDF7", dark: "#322F28")
         case .harbor: return dynamic(light: "#FFFFFF", dark: "#1D272C")
@@ -89,6 +94,7 @@ struct Theme {
 
     private var plainColumnFill: Color {
         switch palette {
+        case .ember: return dynamic(light: "#F0E6DC", dark: "#241C16")
         case .graphiteIris: return dynamic(light: "#ECECF0", dark: "#1E1E25")
         case .paperPine: return dynamic(light: "#ECE7DB", dark: "#282520")
         case .harbor: return dynamic(light: "#E6EDEF", dark: "#151D21")
@@ -130,7 +136,7 @@ private extension NSColor {
 }
 
 private struct BatonThemeKey: EnvironmentKey {
-    static let defaultValue = Theme(palette: .graphiteIris, tintedColumns: true)
+    static let defaultValue = Theme(palette: .ember, tintedColumns: true)
 }
 
 extension EnvironmentValues {

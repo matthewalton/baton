@@ -1,7 +1,7 @@
 // Renders the Baton app icon into an .iconset directory.
 // Usage: swift scripts/make-icon.swift <output.iconset>
-// Design: burnt-orange squircle with a relay baton mid-handoff — a hollow
-// white tube at 45° with speed streaks trailing behind it.
+// Design: burnt-orange squircle with a relay baton mid-twirl — a white
+// capsule at 45° framed by two rotation arcs.
 import AppKit
 import UniformTypeIdentifiers
 
@@ -64,46 +64,29 @@ func draw(in ctx: CGContext) {
     )
     ctx.restoreGState()
 
-    // Relay baton mid-handoff: axes rotated 45° so +x runs along the baton,
-    // pointing up-right. Drawn as an open cylinder — the elliptical mouth at
-    // the leading end is what makes it read as a tube.
+    // Relay baton mid-twirl: two rotation arcs in the gaps around a white
+    // capsule rotated 45° so it points up-right.
     ctx.saveGState()
     ctx.translateBy(x: 512, y: 512)
-    ctx.rotate(by: .pi / 4)
 
-    let tubeWidth: CGFloat = 148          // baton diameter
-    let tubeBack: CGFloat = -220          // trailing end along the axis
-    let tubeFront: CGFloat = 280          // leading end (mouth) along the axis
-    let endDepth: CGFloat = tubeWidth * 0.30  // ellipse semi-axis giving the cylinder its 3D tilt
-
-    // Speed streaks trailing the baton, slightly translucent.
-    ctx.setFillColor(srgb(0xFFFFFF, 0.65))
-    for streak in [CGRect(x: -430, y: -76, width: 150, height: 44),
-                   CGRect(x: -470, y: 32, width: 190, height: 44)] {
-        ctx.addPath(CGPath(roundedRect: streak, cornerWidth: 22, cornerHeight: 22, transform: nil))
+    ctx.setStrokeColor(srgb(0xFFFFFF, 0.60))
+    ctx.setLineWidth(46)
+    ctx.setLineCap(.round)
+    for (from, to) in [(100.0, 165.0), (280.0, 345.0)] {
+        ctx.addArc(center: .zero, radius: 340,
+                   startAngle: from * .pi / 180, endAngle: to * .pi / 180, clockwise: false)
+        ctx.strokePath()
     }
-    ctx.fillPath()
 
-    // Tube body: rectangle with a rounded trailing end and an elliptical bulge
-    // at the leading end (the far rim of the mouth).
-    let body = CGMutablePath()
-    body.addRoundedRect(
-        in: CGRect(x: tubeBack, y: -tubeWidth / 2, width: tubeFront - tubeBack, height: tubeWidth),
-        cornerWidth: 30,
-        cornerHeight: 30
-    )
-    body.addEllipse(in: CGRect(x: tubeFront - endDepth, y: -tubeWidth / 2, width: endDepth * 2, height: tubeWidth))
+    ctx.rotate(by: .pi / 4)
     ctx.setShadow(offset: CGSize(width: 0, height: -10), blur: 22, color: srgb(0x000000, 0.22))
-    ctx.addPath(body)
-    ctx.setFillColor(srgb(0xFFFFFF, 0.95))
-    ctx.fillPath()
-
-    // Mouth of the tube: a darker inset ellipse reads as the hollow inside.
-    ctx.setShadow(offset: .zero, blur: 0, color: nil)
-    let mouthDepth = endDepth * 0.62
-    let mouthRadius = tubeWidth / 2 * 0.62
-    ctx.addEllipse(in: CGRect(x: tubeFront - mouthDepth, y: -mouthRadius, width: mouthDepth * 2, height: mouthRadius * 2))
-    ctx.setFillColor(srgb(0xC24E12))
+    ctx.addPath(CGPath(
+        roundedRect: CGRect(x: -270, y: -66, width: 540, height: 132),
+        cornerWidth: 66,
+        cornerHeight: 66,
+        transform: nil
+    ))
+    ctx.setFillColor(srgb(0xFFFFFF, 0.96))
     ctx.fillPath()
     ctx.restoreGState()
 }

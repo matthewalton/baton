@@ -7,7 +7,7 @@ struct BatonApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var store: AppStore
 
-    @AppStorage("themePalette") private var palette: ThemePalette = .graphiteIris
+    @AppStorage("themePalette") private var palette: ThemePalette = .ember
     @AppStorage("themeTintedColumns") private var tintedColumns = true
     @AppStorage("themeAppearance") private var appearance: ThemeAppearance = .system
 
@@ -55,7 +55,7 @@ struct BatonApp: App {
 }
 
 struct ThemeSettingsView: View {
-    @AppStorage("themePalette") private var palette: ThemePalette = .graphiteIris
+    @AppStorage("themePalette") private var palette: ThemePalette = .ember
     @AppStorage("themeTintedColumns") private var tintedColumns = true
     @AppStorage("themeAppearance") private var appearance: ThemeAppearance = .system
 
