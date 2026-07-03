@@ -65,12 +65,12 @@ claude mcp add --transport http --scope user baton http://127.0.0.1:8321/mcp
 
 ## 🎨 Themes
 
-Baton ships three hand-tuned palettes, each with matching light and dark variants. Pick yours in **Settings (⌘,)**, along with a light/dark override and a toggle for tinted columns (soft per-column hue washes that cycle across the board — shown in the hero shot above).
+Baton ships four hand-tuned palettes, each with matching light and dark variants. Pick yours in **Settings (⌘,)**, along with a light/dark override and a toggle for tinted columns (soft per-column hue washes that cycle across the board — shown in the hero shot above).
 
-| Graphite & Iris | Paper & Pine | Harbor |
-|:---:|:---:|:---:|
-| ![Graphite & Iris, light](assets/theme-graphite-light.png) | ![Paper & Pine, light](assets/theme-pine-light.png) | ![Harbor, dark](assets/theme-harbor-dark.png) |
-| Cool neutrals, indigo accent — the default | Warm paper tones, forest green accent | Sea-glass blues, teal accent |
+| Ember | Graphite & Iris | Paper & Pine | Harbor |
+|:---:|:---:|:---:|:---:|
+| ![Ember, light](assets/theme-ember-light.png) | ![Graphite & Iris, light](assets/theme-graphite-light.png) | ![Paper & Pine, light](assets/theme-pine-light.png) | ![Harbor, dark](assets/theme-harbor-dark.png) |
+| Warm cream, burnt-orange accent — the default | Cool neutrals, indigo accent | Warm paper tones, forest green accent | Sea-glass blues, teal accent |
 
 Priority badge colors stay fixed across themes, so urgent always reads as urgent. Even the app icon is code — rendered at build time by [`scripts/make-icon.swift`](scripts/make-icon.swift).
 

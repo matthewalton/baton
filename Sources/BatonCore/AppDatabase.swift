@@ -10,7 +10,16 @@ public struct AppDatabase {
     }
 
     /// Opens (creating if needed) the on-disk database in Application Support.
+    /// Set BATON_DB_PATH to open a database elsewhere (demo instances, screenshots).
     public static func onDisk() throws -> AppDatabase {
+        if let override = ProcessInfo.processInfo.environment["BATON_DB_PATH"] {
+            let url = URL(fileURLWithPath: override)
+            try FileManager.default.createDirectory(
+                at: url.deletingLastPathComponent(),
+                withIntermediateDirectories: true
+            )
+            return try AppDatabase(dbQueue: try DatabaseQueue(path: url.path))
+        }
         let support = try FileManager.default.url(
             for: .applicationSupportDirectory,
             in: .userDomainMask,
